@@ -147,6 +147,8 @@ obj-$(CONFIG_HID_WIIMOTE)	+= hid-wiimote.o
 obj-$(CONFIG_HID_SENSOR_HUB)	+= hid-sensor-hub.o
 obj-$(CONFIG_HID_SENSOR_CUSTOM_SENSOR)	+= hid-sensor-custom.o
 
+obj-$(CONFIG_HID_KUNIT_TEST)	+= hid-jabra-test.o
+
 hid-uclogic-test-objs		:= hid-uclogic-rdesc.o \
 				   hid-uclogic-params.o \
 				   hid-uclogic-rdesc-test.o

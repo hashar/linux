@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -eu -o pipefail
+
+basepath=$(realpath "$(dirname "$0")/../..")
+KUNIT_PY=tools/testing/kunit/kunit.py
+
+if [ ${#@} -eq 0 ]; then
+	cd "$basepath"
+	exec $KUNIT_PY --help
+	exit 1
+fi;
+
+cmd=$1
+shift
+
+cd "$basepath"
+exec $KUNIT_PY "$cmd" --kunitconfig drivers/hid/.kunitconfig "${@}"
