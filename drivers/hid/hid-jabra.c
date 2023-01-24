@@ -16,6 +16,7 @@
 #define HID_UP_VENDOR_DEFINED_MIN	0xff000000
 #define HID_UP_VENDOR_DEFINED_MAX	0xffff0000
 
+#define map_key_clear(c) hid_map_usage_clear(hi, usage, bit, max, EV_KEY, (c))
 static int jabra_input_mapping(struct hid_device *hdev,
 			       struct hid_input *hi,
 			       struct hid_field *field,
@@ -26,16 +27,32 @@ static int jabra_input_mapping(struct hid_device *hdev,
 		((usage->hid & HID_USAGE_PAGE) >= HID_UP_VENDOR_DEFINED_MIN &&
 		 (usage->hid & HID_USAGE_PAGE) <= HID_UP_VENDOR_DEFINED_MAX);
 
+	// When handled, will stop processing the usages we handle
+	int is_remapped = 1;
+
+	switch (usage->hid & HID_USAGE) {
+	case 0x002f:
+		map_key_clear(KEY_MICMUTE);
+		break;
+	default:
+		 // When returned caller will use default mapping
+		 is_remapped = 0;
+	break;
+	}
+
 	dbg_hid("hid=0x%08x appl=0x%08x coll_idx=0x%02x usage_idx=0x%02x: %s\n",
 		usage->hid,
 		field->application,
 		usage->collection_index,
 		usage->usage_index,
-		is_vendor_defined ? "ignored" : "defaulted");
+		is_vendor_defined ? "ignored" : (is_remapped ? "remapped" : "defaulted")
+	);
 
 	/* Ignore vendor defined usages, default map standard usages */
-	return is_vendor_defined ? -1 : 0;
+	return is_vendor_defined ? -1 : is_remapped;
 }
+
+//#undef map_key_clear
 
 static const struct hid_device_id jabra_devices[] = {
 	{ HID_USB_DEVICE(USB_VENDOR_ID_JABRA, HID_ANY_ID) },
@@ -53,3 +70,7 @@ module_hid_driver(jabra_driver);
 MODULE_AUTHOR("Niels Skou Olsen <nolsen@jabra.com>");
 MODULE_DESCRIPTION("Jabra USB HID Driver");
 MODULE_LICENSE("GPL");
+
+#ifdef CONFIG_HID_KUNIT_TEST
+#include "hid-jabra-test.c"
+#endif
